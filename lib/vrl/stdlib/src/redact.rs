@@ -1,6 +1,5 @@
-/*
-use vrl::prelude::*;
 use std::str::FromStr;
+use vrl::prelude::*;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Redact;
@@ -27,12 +26,12 @@ impl Function for Redact {
                 kind: kind::ANY,
                 required: false,
             },
-            Parameter {
-                keyword: "patterns",
-                kind: kind::ANY,
-                required: false,
-            },
         ]
+    }
+
+    fn examples(&self) -> &'static [Example] {
+        // TODO
+        &[]
     }
 
     fn compile(&self, mut arguments: ArgumentList) -> Compiled {
@@ -61,14 +60,13 @@ impl Function for Redact {
     }
 }
 
-// -----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct RedactFn {
     value: Box<dyn Expression>,
-    filters: Vec<Filter>,
+    filters: Vec<Expr>,
     redactor: Redactor,
-    patterns: Option<Vec<Expr>>,
 }
 
 impl Expression for RedactFn {
@@ -132,7 +130,7 @@ impl Expression for RedactFn {
     }
 }
 
-// -----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 /// The redaction filter to apply to the given value.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -172,7 +170,7 @@ impl FromStr for Filter {
     }
 }
 
-// -----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 /// The recipe for redacting the matched filters.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -226,65 +224,64 @@ impl FromStr for Redactor {
     }
 }
 
-#[cfg(test)]
-mod test {
-    use super::*;
-    use regex::Regex;
+//#[cfg(test)]
+//mod test {
+//use super::*;
+//use regex::Regex;
 
-    test_type_def![
-        string_infallible {
-            expr: |_| RedactFn {
-                value: lit!("foo").boxed(),
-                filters: vec![Filter::Pattern],
-                patterns: None,
-                redactor: Redactor::Full,
-            },
-            def: TypeDef {
-                kind: value::Kind::Bytes,
-                ..Default::default()
-            },
-        }
+//test_type_def![
+//string_infallible {
+//expr: |_| RedactFn {
+//value: lit!("foo").boxed(),
+//filters: vec![Filter::Pattern],
+//patterns: None,
+//redactor: Redactor::Full,
+//},
+//def: TypeDef {
+//kind: value::Kind::Bytes,
+//..Default::default()
+//},
+//}
 
-        non_string_fallible {
-            expr: |_| RedactFn {
-                value: lit!(27).boxed(),
-                filters: vec![Filter::Pattern],
-                patterns: None,
-                redactor: Redactor::Full,
-            },
-            def: TypeDef {
-                fallible: true,
-                kind: value::Kind::Bytes,
-                ..Default::default()
-            },
-        }
+//non_string_fallible {
+//expr: |_| RedactFn {
+//value: lit!(27).boxed(),
+//filters: vec![Filter::Pattern],
+//patterns: None,
+//redactor: Redactor::Full,
+//},
+//def: TypeDef {
+//fallible: true,
+//kind: value::Kind::Bytes,
+//..Default::default()
+//},
+//}
 
-        valid_pattern_infallible {
-            expr: |_| RedactFn {
-                value: lit!("1111222233334444").boxed(),
-                filters: vec![Filter::Pattern],
-                patterns: Some(vec![Literal::from(Regex::new(r"/[0-9]{16}/").unwrap()).into()]),
-                redactor: Redactor::Full,
-            },
-            def: TypeDef {
-                kind: value::Kind::Bytes,
-                ..Default::default()
-            },
-        }
+//valid_pattern_infallible {
+//expr: |_| RedactFn {
+//value: lit!("1111222233334444").boxed(),
+//filters: vec![Filter::Pattern],
+//patterns: Some(vec![Literal::from(Regex::new(r"/[0-9]{16}/").unwrap()).into()]),
+//redactor: Redactor::Full,
+//},
+//def: TypeDef {
+//kind: value::Kind::Bytes,
+//..Default::default()
+//},
+//}
 
-        invalid_pattern_fallible {
-            expr: |_| RedactFn {
-                value: lit!("1111222233334444").boxed(),
-                filters: vec![Filter::Pattern],
-                patterns: Some(vec![lit!("i am a teapot").into()]),
-                redactor: Redactor::Full,
-            },
-            def: TypeDef {
-                fallible: true,
-                kind: value::Kind::Bytes,
-                ..Default::default()
-            },
-        }
-    ];
-}
-*/
+//invalid_pattern_fallible {
+//expr: |_| RedactFn {
+//value: lit!("1111222233334444").boxed(),
+//filters: vec![Filter::Pattern],
+//patterns: Some(vec![lit!("i am a teapot").into()]),
+//redactor: Redactor::Full,
+//},
+//def: TypeDef {
+//fallible: true,
+//kind: value::Kind::Bytes,
+//..Default::default()
+//},
+//}
+//];
+//}
